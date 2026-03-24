@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>智慧请假 - 信息录入</title>
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --primary-gradient: linear-gradient(135deg, #4285f4, #1a73e8);
+            --bg-color: #f4f7fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --label-color: #5f6368;
+            --border-color: #dadce0;
+        }
+
+        body {
+            font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container { width: 100%; max-width: 440px; }
+
+        .main-card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px;
+            background: var(--primary-gradient);
+        }
+
+        h2.title {
+            text-align: center; font-size: 1.3rem; margin: 10px 0 25px;
+            background: var(--primary-gradient); -webkit-background-clip: text; color: transparent;
+        }
+
+        .section {
+            background: #f8f9fb; padding: 18px; border-radius: 14px; margin-bottom: 20px;
+            border: 1px solid #eee;
+        }
+
+        .section-header {
+            font-size: 13px; color: var(--primary-color); font-weight: 700;
+            margin-bottom: 15px; display: flex; align-items: center; gap: 6px;
+        }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group:last-child { margin-bottom: 0; }
+
+        label { display: block; font-size: 12px; color: var(--label-color); margin-bottom: 5px; padding-left: 2px; }
+
+        input {
+            width: 100%; padding: 12px; border: 1px solid var(--border-color);
+            border-radius: 10px; box-sizing: border-box; font-size: 14px;
+            transition: all 0.2s; background: #fff;
+        }
+
+        input:focus {
+            outline: none; border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(26,115,232,0.1);
+        }
+
+        .q-group { display: flex; gap: 8px; margin-top: 8px; }
+        .q-btn {
+            flex: 1; padding: 8px; background: #eef4ff; color: var(--primary-color);
+            border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;
+        }
+        .q-btn:active { background: #dce7ff; transform: scale(0.98); }
+
+        .btn-go {
+            width: 100%; padding: 16px; background: var(--primary-gradient);
+            color: white; border: none; border-radius: 14px; font-size: 16px;
+            font-weight: 700; cursor: pointer; margin-top: 10px;
+            box-shadow: 0 5px 15px rgba(26,115,232,0.3);
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 0; background: #fff; }
+            .main-card { box-shadow: none; border-radius: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="main-card">
+        <h2 class="title">请假信息录入</h2>
+
+        <div class="section">
+            <div class="section-header">⏱ 时间与事由</div>
+            <div class="form-group">
+                <label>请假开始时间</label>
+                <input type="datetime-local" id="startTime">
+                <div class="q-group">
+                    <button class="q-btn" onclick="setDuration(1.5)">1.5小时</button>
+                    <button class="q-btn" onclick="setDuration(3)">3小时</button>
+                </div>
+            </div>
+            <div class="form-group"><label>请假结束时间</label><input type="datetime-local" id="endTime"></div>
+            <div class="form-group"><label>请假事由</label><input type="text" id="reason" placeholder="如：身体不舒服"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">👤 学生身份信息</div>
+            <div class="form-group"><label>手机号</label><input type="text" id="phone" placeholder="请输入手机号"></div>
+            <div class="form-group"><label>学生姓名</label><input type="text" id="name" placeholder="请输入姓名"></div>
+            <div class="form-group"><label>学生学号</label><input type="text" id="stuId" placeholder="请输入学号"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">🏫 组织与班级</div>
+            <div class="form-group"><label>所在院系</label><input type="text" id="dept" placeholder="如：信息工程学院"></div>
+            <div class="form-group"><label>所在年级</label><input type="text" id="grade" placeholder="如：2025"></div>
+            <div class="form-group"><label>所在班级</label><input type="text" id="clazz" placeholder="如：25级虚拟现实技术应用1班"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">✍️ 审批信息</div>
+            <div class="form-group"><label>辅导员姓名</label><input type="text" id="teacher" placeholder="请输入审核人姓名"></div>
+        </div>
+
+        <button class="btn-go" onclick="go()">立即生成完整假条</button>
+    </div>
+</div>
+
+<script>
+    // 初始化开始时间
+    const now = new Date();
+    now.setMinutes(Math.floor(now.getMinutes()/10)*10);
+    document.getElementById('startTime').value = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+
+    function setDuration(h) {
+        const startStr = document.getElementById('startTime').value;
+        if(!startStr) return;
+        const start = new Date(startStr);
+        const end = new Date(start.getTime() + h * 60 * 60 * 1000);
+        document.getElementById('endTime').value = new Date(end.getTime() - end.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    }
+
+    function go() {
+        const sVal = document.getElementById('startTime').value;
+        const eVal = document.getElementById('endTime').value;
+        
+        // 获取所有必填项
+        const fields = ['name', 'stuId', 'phone', 'dept', 'grade', 'clazz', 'teacher', 'reason'];
+        for (let f of fields) {
+            if (!document.getElementById(f).value) {
+                alert("请完整填写所有信息");
+                return;
+            }
+        }
+        
+        if(!sVal || !eVal) { alert("请选择请假时间"); return; }
+
+        const s = new Date(sVal);
+        const e = new Date(eVal);
+        const diffDays = ((e - s) / (1000 * 60 * 60 * 24)).toFixed(2);
+        const p = n => String(n).padStart(2, '0');
+
+        const fmtHM = (d) => `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+        const fmtHMS = (d) => `${fmtHM(d)}:${p(Math.floor(Math.random()*60))}`;
+
+        const data = {
+            name: document.getElementById('name').value,
+            stuId: document.getElementById('stuId').value,
+            phone: document.getElementById('phone').value,
+            dept: document.getElementById('dept').value,
+            grade: document.getElementById('grade').value,
+            clazz: document.getElementById('clazz').value,
+            teacher: document.getElementById('teacher').value,
+            reason: document.getElementById('reason').value,
+            range: `${fmtHM(s)} 至 ${fmtHM(e)}`,
+            days: diffDays,
+            t1: fmtHM(new Date(s.getTime() - 1500000)), 
+            t2: fmtHMS(new Date(s.getTime() - 600000))   
+        };
+
+        localStorage.setItem('leaveFullData', JSON.stringify(data));
+        window.location.href = 'liu.html';
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>假条详情</title>
+  <link rel="stylesheet" href="static/css/leave-block.css">
+  <style>
+    /* 确保布局高度一致，防止数据加载前塌陷 */
+    .lefttext { min-height: 46px; }
+    .righttext1 { min-height: 100px; }
+  </style>
+</head>
+<body>
+  <div class="leave-block">
+    <div class="leave-card">
+      <div class="leave-grid">
+        <div class="leave-row"><div class="leave-label">请假类型</div><div class="leave-value">学生校内请假（不可出校）</div></div>
+        <div class="leave-row"><div class="leave-label">请假性质</div><div class="leave-value">因私请假</div></div>
+        <div class="leave-row"><div class="leave-label">是否离青</div><div class="leave-value">否</div></div>
+        <div class="leave-row"><div class="leave-label">请假日期</div><div class="leave-value" id="view-range"></div></div>
+        <div class="leave-row"><div class="leave-label">请假天数</div><div class="leave-value" id="view-days"></div></div>
+        <div class="leave-row"><div class="leave-label">请假事由</div><div class="leave-value" id="view-reason"></div></div>
+        <div class="leave-row"><div class="leave-label">证明材料 (0/9)</div><div class="leave-value"></div></div>
+        <div class="leave-row"><div class="leave-label">手机号</div><div class="leave-value" id="view-phone"></div></div>
+        <div class="leave-row"><div class="leave-label">姓名</div><div class="leave-value" id="view-name"></div></div>
+        <div class="leave-row"><div class="leave-label">学号</div><div class="leave-value" id="view-stuId"></div></div>
+        <div class="leave-row"><div class="leave-label">院系</div><div class="leave-value" id="view-dept"></div></div>
+        <div class="leave-row"><div class="leave-label">年级</div><div class="leave-value" id="view-grade"></div></div>
+        <div class="leave-row"><div class="leave-label">班级</div><div class="leave-value" id="view-clazz"></div></div>
+      </div>
+    </div>
+
+    <div id="shenpi">
+      <span id="shenhetext">审核流程</span>
+      <div id="hr"></div>
+      <div id="liucheng">
+        <div class="item">
+          <span class="lefttext" id="view-t1"></span>
+          <span class="lefttext" id="view-t2"></span>
+        </div>
+        <div class="item1">
+          <img src="static/picture/duihao.svg" class="icon">
+          <div id="line1"></div>
+          <img src="static/picture/duihao.svg" class="icon">
+          <div id="line2"></div>
+          <img src="static/picture/duihao.svg" class="icon">
+        </div>
+        <div class="item">
+          <span class="righttext">提交申请</span>
+          <span class="righttext1">
+            辅导员审核 <br> 通过 <br>
+            审核人：<span id="view-teacher"></span> <br>
+            审核意见：同意
+          </span>
+          <span class="righttext2">结束</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="btn">定位销假</div>
+
+  <script>
+    // 这段脚本就是负责“对应”的逻辑
+    window.onload = function() {
+      // 从本地存储读取你在“点我.html”里填的数据
+      const rawData = localStorage.getItem('leaveFullData');
+      if (!rawData) return;
+      const data = JSON.parse(rawData);
+
+      // 自动把数据填入对应的 HTML 标签里
+      const fill = (id, val) => {
+        const el = document.getElementById(id);
+        if(el) el.innerText = val || "";
+      };
+
+      fill('view-name', data.name);
+      fill('view-stuId', data.stuId);
+      fill('view-phone', data.phone);
+      fill('view-reason', data.reason);
+      fill('view-dept', data.dept);
+      fill('view-grade', data.grade);
+      fill('view-clazz', data.clazz);
+      fill('view-range', data.range);
+      fill('view-days', data.days);
+      fill('view-teacher', data.teacher);
+
+      // 处理审核流程的时间显示
+      if(data.t1) document.getElementById('view-t1').innerHTML = data.t1.replace(' ', '<br>');
+      if(data.t2) document.getElementById('view-t2').innerHTML = data.t2.replace(' ', '<br>');
+    };
+  </script>
+</body>
+</html>

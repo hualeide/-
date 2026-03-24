@@ -1,0 +1,157 @@
+﻿/* 简单独立样式，用于展示从 index.htm 提取的请假块 */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #F4F4F4;
+  font-family: PingFang SC, Microsoft YaHei;
+}
+
+.leave-block {
+
+  width: 100%;
+  font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+  color: #2b2b2b;
+}
+
+.leave-card {
+  width: 100%;
+  margin-top: 15px;
+  background: #fff;
+  border: 1px solid rgb(232, 232, 232);
+
+  padding: 0;
+}
+
+.leave-grid {
+  display: flex;
+  flex-direction: column;
+  padding-left: 20px;
+  padding-bottom: 10px;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.leave-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.leave-label {
+  width: 120px;
+  min-width: 96px;
+  color: #92969C;
+  font-size: 14px;
+  margin-right: 8px;
+}
+
+.leave-value {
+  flex: 1;
+  color: #1e2329;
+  font-size: 14px;
+  word-break: break-all;
+  margin-right: 35px;
+  line-height: 16px;
+}
+
+
+#shenpi {
+
+  margin-top: 20px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+#shenhetext {
+  margin: 10px;
+}
+
+#hr {
+  width: 100%;
+  height: 1px;
+  background-color: rgb(232, 232, 232);
+  margin-left: 20px;
+}
+
+#liucheng {
+  display: flex;
+  flex-direction: row;
+  margin-top: 10px;
+  justify-content: center;
+  padding-bottom: 20px;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+
+}
+
+.item1 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 20px;
+  margin-right: 10px;
+}
+
+.lefttext {
+
+  font-size: 12px;
+  color: #bdc0c5;
+  line-height: 23px;
+  text-align: right;
+}
+
+.icon {
+
+  width: 23px;
+  height: 23px;
+
+}
+
+.righttext {
+
+  font-size: 14px;
+  line-height: 23px;
+  color: #92969c;
+}
+
+.righttext1 {
+  margin-top: 30px;
+  font-size: 14px;
+  line-height: 23px;
+  color: #92969c;
+}
+
+.righttext2 {
+  margin-top: 20px;
+  font-size: 14px;
+  line-height: 23px;
+  color: #92969c;
+}
+
+#line1 {
+  width: 1px;
+  height: 30px;
+  background-color: #EFEFEF;
+}
+
+#line2 {
+  width: 1px;
+  height: 90px;
+  background-color: #EFEFEF;
+}
+
+#btn {
+  color: #BCBEC0;
+  background-color: #EFEFEF;
+  height: 60px;
+  text-align: center;
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px;
+}
