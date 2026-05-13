@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0c1222">
+  <title>智慧请假 - 信息录入</title>
+  <link rel="stylesheet" href="static/css/form.css">
+</head>
+<body>
+  <div class="wrap">
+    <div class="top-bar">
+      <h1>请假信息</h1>
+      <span class="hint" id="draftHint"></span>
+    </div>
+
+    <div class="toolbar">
+      <button type="button" class="tool-btn" id="btnLast">填入上次假条信息</button>
+      <button type="button" class="tool-btn secondary" id="btnClear">清空表单</button>
+    </div>
+    <p class="msg" id="msg" aria-live="polite"></p>
+
+    <div class="card">
+      <h2 class="card-title">时间与事由</h2>
+      <div class="field">
+        <label for="startTime">开始时间</label>
+        <input type="datetime-local" id="startTime" autocomplete="off">
+        <div class="row-dur">
+          <button type="button" class="dur-btn" data-h="1.5">1.5 时</button>
+          <button type="button" class="dur-btn" data-h="3">3 时</button>
+          <button type="button" class="dur-btn" data-h="6">6 时</button>
+          <button type="button" class="dur-btn" data-h="24">24 时</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="endTime">结束时间</label>
+        <input type="datetime-local" id="endTime" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="reason">事由</label>
+        <input type="text" id="reason" placeholder="简要说明" enterkeyhint="next" autocomplete="off">
+        <div class="chips" id="reasonChips"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">学生身份</h2>
+      <div class="field">
+        <label for="phone">手机号</label>
+        <input type="tel" id="phone" inputmode="numeric" maxlength="11" placeholder="11 位手机号" enterkeyhint="next" autocomplete="tel">
+      </div>
+      <div class="field">
+        <label for="name">姓名</label>
+        <input type="text" id="name" placeholder="姓名" enterkeyhint="next" autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="stuId">学号</label>
+        <input type="text" id="stuId" inputmode="numeric" placeholder="学号" enterkeyhint="next" autocomplete="username">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">院系班级</h2>
+      <div class="field">
+        <label for="dept">院系</label>
+        <input type="text" id="dept" placeholder="如：信息工程学院" enterkeyhint="next" autocomplete="organization">
+      </div>
+      <div class="field">
+        <label for="grade">年级</label>
+        <input type="text" id="grade" inputmode="numeric" placeholder="如：2025" maxlength="4" enterkeyhint="next">
+      </div>
+      <div class="field">
+        <label for="clazz">班级</label>
+        <input type="text" id="clazz" placeholder="班级名称" enterkeyhint="next">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">审批</h2>
+      <div class="field">
+        <label for="teacher">辅导员姓名</label>
+        <input type="text" id="teacher" placeholder="姓名" enterkeyhint="done" autocomplete="name">
+      </div>
+    </div>
+  </div>
+
+  <div class="bar-bottom">
+    <button type="button" class="submit" id="btnGo">生成假条</button>
+  </div>
+
+  <script>
+    const DRAFT_KEY = 'leaveFormDraft';
+    const DATA_KEY = 'leaveFullData';
+    const FIELD_IDS = ['startTime', 'endTime', 'reason', 'phone', 'name', 'stuId', 'dept', 'grade', 'clazz', 'teacher'];
+    const REASON_PRESETS = ['身体不舒服', '事假', '病假', '回家', '考试/比赛'];
+    const LABELS = {
+      startTime: '开始时间',
+      endTime: '结束时间',
+      reason: '事由',
+      phone: '手机号',
+      name: '姓名',
+      stuId: '学号',
+      dept: '院系',
+      grade: '年级',
+      clazz: '班级',
+      teacher: '辅导员姓名',
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const msgEl = $('msg');
+    const draftHint = $('draftHint');
+
+    function setMsg(text) {
+      msgEl.textContent = text || '';
+    }
+
+    function toLocalInputValue(d) {
+      return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    }
+
+    function initStartTime() {
+      const now = new Date();
+      now.setMinutes(Math.floor(now.getMinutes() / 10) * 10, 0, 0);
+      $('startTime').value = toLocalInputValue(now);
+    }
+
+    function setDuration(h) {
+      const startStr = $('startTime').value;
+      if (!startStr) return;
+      const start = new Date(startStr);
+      const end = new Date(start.getTime() + Number(h) * 60 * 60 * 1000);
+      $('endTime').value = toLocalInputValue(end);
+    }
+
+    function collectForm() {
+      const o = {};
+      FIELD_IDS.forEach((id) => { o[id] = $(id).value; });
+      return o;
+    }
+
+    function applyForm(data) {
+      if (!data || typeof data !== 'object') return;
+      FIELD_IDS.forEach((id) => {
+        if (data[id] != null && data[id] !== '') $(id).value = data[id];
+      });
+    }
+
+    let saveTimer;
+    function scheduleSaveDraft() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        try {
+          localStorage.setItem(DRAFT_KEY, JSON.stringify(collectForm()));
+          draftHint.textContent = '已自动保存';
+          setTimeout(() => {
+            if (draftHint.textContent === '已自动保存') draftHint.textContent = '';
+          }, 1500);
+        } catch (e) { /* ignore */ }
+      }, 280);
+    }
+
+    function loadDraft() {
+      try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (!raw) return false;
+        applyForm(JSON.parse(raw));
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function fillFromLastLeave() {
+      try {
+        const raw = localStorage.getItem(DATA_KEY);
+        if (!raw) {
+          setMsg('没有上次的假条数据，请先在下方填过一次并生成。');
+          return;
+        }
+        const d = JSON.parse(raw);
+        $('name').value = d.name || '';
+        $('stuId').value = d.stuId || '';
+        $('phone').value = d.phone || '';
+        $('dept').value = d.dept || '';
+        $('grade').value = d.grade || '';
+        $('clazz').value = d.clazz || '';
+        $('teacher').value = d.teacher || '';
+        setMsg('已填入上次假条中的身份与院系信息（时间与事由未改）。');
+        scheduleSaveDraft();
+      } catch (e) {
+        setMsg('读取上次数据失败。');
+      }
+    }
+
+    function clearForm() {
+      FIELD_IDS.forEach((id) => { $(id).value = ''; });
+      initStartTime();
+      $('endTime').value = '';
+      try {
+        localStorage.removeItem(DRAFT_KEY);
+      } catch (e) { /* ignore */ }
+      setMsg('已清空。');
+      draftHint.textContent = '';
+    }
+
+    function focusField(id) {
+      const el = $(id);
+      el.focus({ preventScroll: false });
+      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+
+    function go() {
+      setMsg('');
+      const order = ['startTime', 'endTime', 'reason', 'phone', 'name', 'stuId', 'dept', 'grade', 'clazz', 'teacher'];
+      for (let i = 0; i < order.length; i += 1) {
+        const id = order[i];
+        if (!$(id).value) {
+          setMsg('请填写：' + LABELS[id]);
+          focusField(id);
+          return;
+        }
+      }
+
+      const sVal = $('startTime').value;
+      const eVal = $('endTime').value;
+      const s = new Date(sVal);
+      const e = new Date(eVal);
+      if (e <= s) {
+        setMsg('结束时间须晚于开始时间。');
+        focusField('endTime');
+        return;
+      }
+
+      const diffDays = ((e - s) / (1000 * 60 * 60 * 24)).toFixed(2);
+      const p = (n) => String(n).padStart(2, '0');
+      const fmtHM = (d) => `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+      const fmtHMS = (d) => `${fmtHM(d)}:${p(Math.floor(Math.random() * 60))}`;
+
+      const data = {
+        name: $('name').value,
+        stuId: $('stuId').value,
+        phone: $('phone').value,
+        dept: $('dept').value,
+        grade: $('grade').value,
+        clazz: $('clazz').value,
+        teacher: $('teacher').value,
+        reason: $('reason').value,
+        range: `${fmtHM(s)} 至 ${fmtHM(e)}`,
+        days: diffDays,
+        t1: fmtHM(new Date(s.getTime() - 1500000)),
+        t2: fmtHMS(new Date(s.getTime() - 600000)),
+      };
+
+      localStorage.setItem(DATA_KEY, JSON.stringify(data));
+      window.location.href = 'liu.html';
+    }
+
+    function buildReasonChips() {
+      const host = $('reasonChips');
+      REASON_PRESETS.forEach((text) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'chip';
+        b.textContent = text;
+        b.addEventListener('click', () => {
+          $('reason').value = text;
+          scheduleSaveDraft();
+          setMsg('');
+        });
+        host.appendChild(b);
+      });
+    }
+
+    document.querySelectorAll('.dur-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        setDuration(btn.getAttribute('data-h'));
+        scheduleSaveDraft();
+        setMsg('');
+      });
+    });
+
+    FIELD_IDS.forEach((id) => {
+      $(id).addEventListener('input', () => {
+        scheduleSaveDraft();
+        setMsg('');
+      });
+      $(id).addEventListener('change', scheduleSaveDraft);
+    });
+
+    $('btnGo').addEventListener('click', go);
+    $('btnLast').addEventListener('click', () => { setMsg(''); fillFromLastLeave(); });
+    $('btnClear').addEventListener('click', clearForm);
+
+    buildReasonChips();
+
+    if (!loadDraft()) {
+      initStartTime();
+    } else {
+      if (!$('startTime').value) initStartTime();
+    }
+  </script>
+</body>
+</html>
